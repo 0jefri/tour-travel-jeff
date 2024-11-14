@@ -83,15 +83,15 @@ func (r *placeRepository) GetAllPlaces(limit, page int, sort, filter, date strin
 }
 
 func (r *placeRepository) GetPlaceDetail(placeDetailID int) (*model.PlaceDetail, error) {
-	// Query untuk mengambil place detail
-	query := `SELECT p.id, p.name, r.id, r.rating
+	query := `SELECT p.id, p.name, p.description, p.photo, p.price, r.id, r.rating, t.id, t.name, t.date
 						FROM place_details pd
 						JOIN place p ON pd.place_id = p.id
 						JOIN review r ON pd.review_id = r.id
+						JOIN tour t ON pd.tour_id = t.id
 						WHERE pd.id = $1`
 
 	placeDetail := &model.PlaceDetail{}
-	err := r.db.QueryRow(query, placeDetailID).Scan(&placeDetail.Place.ID, &placeDetail.Place.Name, &placeDetail.Review.ID, &placeDetail.Review.Rating)
+	err := r.db.QueryRow(query, placeDetailID).Scan(&placeDetail.Place.ID, &placeDetail.Place.Name, &placeDetail.Place.Description, &placeDetail.Place.Photo, &placeDetail.Place.Price, &placeDetail.Review.ID, &placeDetail.Review.Rating, &placeDetail.Tour.ID, &placeDetail.Tour.Name, &placeDetail.Tour.Date)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching place detail: %v", err)
 	}

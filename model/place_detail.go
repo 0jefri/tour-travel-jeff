@@ -1,9 +1,10 @@
 package model
 
 type PlaceDetail struct {
-	ID     int
+	// ID     int
 	Place  Place
 	Review Review
+	Tour   Tour
 	Galery []PhotoGroup
 }
 
