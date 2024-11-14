@@ -28,6 +28,7 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/places", placeHandler.GetAllPlaces).Methods("GET")
+	r.HandleFunc("/places-detail", placeHandler.GetPlaceDetail).Methods("GET")
 
 	fmt.Println("Server running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))

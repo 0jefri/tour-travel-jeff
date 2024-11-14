@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -67,5 +68,28 @@ func (h *PlaceHandler) GetAllPlaces(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(places); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
+	}
+}
+
+func (h *PlaceHandler) GetPlaceDetail(w http.ResponseWriter, r *http.Request) {
+	placeDetailIDStr := r.URL.Query().Get("id")
+	placeDetailID, err := strconv.Atoi(placeDetailIDStr)
+	if err != nil {
+		log.Println("error", err)
+		http.Error(w, "Invalid place detail ID", http.StatusBadRequest)
+		return
+	}
+
+	placeDetail, err := h.placeService.GetPlaceDetail(placeDetailID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Mengirimkan data sebagai JSON
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(placeDetail)
+	if err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }

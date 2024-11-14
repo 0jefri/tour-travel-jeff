@@ -15,6 +15,7 @@ type PlaceWithDate struct {
 
 type PlaceRepository interface {
 	GetAllPlaces(limit, page int, sort, filter, date string) ([]PlaceWithDate, error)
+	GetPlaceDetail(placeDetailID int) (*model.PlaceDetail, error)
 }
 
 type placeRepository struct {
@@ -79,4 +80,43 @@ func (r *placeRepository) GetAllPlaces(limit, page int, sort, filter, date strin
 	}
 
 	return places, nil
+}
+
+func (r *placeRepository) GetPlaceDetail(placeDetailID int) (*model.PlaceDetail, error) {
+	// Query untuk mengambil place detail
+	query := `SELECT p.id, p.name, r.id, r.rating
+						FROM place_details pd
+						JOIN place p ON pd.place_id = p.id
+						JOIN review r ON pd.review_id = r.id
+						WHERE pd.id = $1`
+
+	placeDetail := &model.PlaceDetail{}
+	err := r.db.QueryRow(query, placeDetailID).Scan(&placeDetail.Place.ID, &placeDetail.Place.Name, &placeDetail.Review.ID, &placeDetail.Review.Rating)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching place detail: %v", err)
+	}
+
+	photoQuery := `SELECT id, url, caption
+								 FROM photos
+								 WHERE photo_group_id = (SELECT id FROM photo_groups WHERE place_detail_id = $1) LIMIT 4`
+
+	rows, err := r.db.Query(photoQuery, placeDetailID)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching photos: %v", err)
+	}
+	defer rows.Close()
+
+	var photos []model.Photo
+	for rows.Next() {
+		var photo model.Photo
+		err := rows.Scan(&photo.ID, &photo.URL, &photo.Caption)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning photo: %v", err)
+		}
+		photos = append(photos, photo)
+	}
+	// placeDetail.Galery = photos
+	placeDetail.Galery = append(placeDetail.Galery, model.PhotoGroup{Photos: photos})
+
+	return placeDetail, nil
 }
