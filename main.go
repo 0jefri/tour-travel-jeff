@@ -30,10 +30,15 @@ func main() {
 	bookingService := service.NewBookingService(bookingRepository)
 	bookingHandler := handler.NewBookingHandler(bookingService)
 
+	plansRepository := repository.NewPlanRepository(db)
+	plansService := service.NewPlanService(plansRepository)
+	plansHandler := handler.NewPlanHandler(plansService)
+
 	r := mux.NewRouter()
 	r.HandleFunc("/places", placeHandler.GetAllPlaces).Methods("GET")
 	r.HandleFunc("/places-detail", placeHandler.GetPlaceDetail).Methods("GET")
 	r.HandleFunc("/booking", bookingHandler.CreateBooking).Methods("POST")
+	r.HandleFunc("/plans", plansHandler.GetPlansByTourID).Methods("GET")
 
 	fmt.Println("Server running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
