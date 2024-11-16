@@ -1,12 +1,9 @@
 package model
 
-type Plan struct {
+type Location struct {
 	ID          int
 	TourID      int
 	Title       string
+	MapUrl      string
 	Description string
-}
-
-type Benefit struct {
-	Name string `json:"name"`
 }

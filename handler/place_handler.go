@@ -86,7 +86,6 @@ func (h *PlaceHandler) GetPlaceDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Mengirimkan data sebagai JSON
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(placeDetail)
 	if err != nil {

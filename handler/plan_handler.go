@@ -17,23 +17,44 @@ func NewPlanHandler(planService service.PlanService) *PlanHandler {
 	return &PlanHandler{planService: planService}
 }
 
+type ResponseWrapper struct {
+	Status  int         `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
 func (h *PlanHandler) GetPlansByTourID(w http.ResponseWriter, r *http.Request) {
 	tourIDStr := r.URL.Query().Get("tourID")
 	if tourIDStr == "" {
-		http.Error(w, "TourID is required", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ResponseWrapper{
+			Status:  http.StatusBadRequest,
+			Message: "TourID is required",
+			Data:    nil,
+		})
 		return
 	}
 
 	tourID, err := strconv.Atoi(tourIDStr)
 	if err != nil {
-		http.Error(w, "Invalid TourID", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ResponseWrapper{
+			Status:  http.StatusBadRequest,
+			Message: "Invalid TourID",
+			Data:    nil,
+		})
 		return
 	}
 
 	plans, benefits, err := h.planService.GetPlansByTourID(tourID)
 	if err != nil {
 		log.Printf("Error retrieving plans: %v", err)
-		http.Error(w, "Error retrieving plans", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ResponseWrapper{
+			Status:  http.StatusInternalServerError,
+			Message: "Error retrieving plans",
+			Data:    nil,
+		})
 		return
 	}
 
@@ -51,10 +72,10 @@ func (h *PlanHandler) GetPlansByTourID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("Error encoding response: %v", err)
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
-	}
+	json.NewEncoder(w).Encode(ResponseWrapper{
+		Status:  http.StatusOK,
+		Message: "Success",
+		Data:    response,
+	})
 }
